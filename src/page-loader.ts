@@ -216,7 +216,7 @@ export class Nexus {
 
                 return res.text();
             })
-            .then(this.handleLoadResult)
+            .then(res => this.handleLoadResult(res))
             .catch(() => {
                 if (this.retryCount < this.config.maxRetries) {
                     retry();
