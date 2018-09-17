@@ -254,6 +254,10 @@ export class Nexus {
             target.target !== "blank" &&
             this.config.excludeUrls.exec(url) === null &&
             url.indexOf(location.origin) > -1 &&
+            url
+                .substr(location.origin.length)
+                .substr(0, 2)
+                .indexOf("#") === -1 &&
             this.listeners["targetUrlValidation"].every(
                 l => l.callback({ url, target }) !== false
             )
