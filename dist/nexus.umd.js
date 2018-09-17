@@ -93,7 +93,7 @@
                 excludeUrls: new RegExp(".([a-z]+)$", "gm"),
                 maxRetries: 3,
                 retryTimeout: 500,
-                vanillaPageLoadOnError: true,
+                vanillaPageLoadOnError: true
             };
             this.listeners = {
                 error: [],
@@ -101,7 +101,7 @@
                 afterLoad: [],
                 beforeSwap: [],
                 afterSwap: [],
-                targetUrlValidation: [],
+                targetUrlValidation: []
             };
             this.parser = parser;
             this.config = __assign({}, this.config, config);
@@ -126,7 +126,7 @@
                         case 0: return [4 /*yield*/, this.dispatchEvent("error", {
                                 url: this.currentUrl,
                                 target: this.currentTarget,
-                                message: message,
+                                message: message
                             })];
                         case 1:
                             _a.sent();
@@ -154,19 +154,13 @@
                                 document.title = title;
                             }
                             if (contentRootAttributes) {
-                                contentRootAttributes.forEach(function (a) {
-                                    return contentRoot.setAttribute(a.name, a.value);
-                                });
+                                contentRootAttributes.forEach(function (a) { return contentRoot.setAttribute(a.name, a.value); });
                             }
                             if (bodyAttributes) {
-                                bodyAttributes.forEach(function (a) {
-                                    return document.body.setAttribute(a.name, a.value);
-                                });
+                                bodyAttributes.forEach(function (a) { return document.body.setAttribute(a.name, a.value); });
                             }
                             if (htmlAttributes) {
-                                htmlAttributes.forEach(function (a) {
-                                    return document.documentElement.setAttribute(a.name, a.value);
-                                });
+                                htmlAttributes.forEach(function (a) { return document.documentElement.setAttribute(a.name, a.value); });
                             }
                             if (this.pushHistory) {
                                 history.pushState({}, title, this.currentUrl);
@@ -175,7 +169,7 @@
                                     url: this.currentUrl,
                                     target: this.currentTarget,
                                     parsedData: parsedData,
-                                    rawData: rawData,
+                                    rawData: rawData
                                 })];
                         case 1:
                             _a.sent();
@@ -196,7 +190,7 @@
                                     url: this.currentUrl,
                                     target: this.currentTarget,
                                     rawData: data,
-                                    parsedData: parsedData,
+                                    parsedData: parsedData
                                 })];
                         case 1:
                             _a.sent();
@@ -212,7 +206,7 @@
                     switch (_a.label) {
                         case 0: return [4 /*yield*/, this.dispatchEvent("afterLoad", {
                                 url: this.currentUrl,
-                                target: this.currentTarget,
+                                target: this.currentTarget
                             })];
                         case 1:
                             _a.sent();
@@ -319,12 +313,12 @@
         };
         Nexus.prototype.onElementClick = function (selector, callback) {
             document.addEventListener("click", function (event) {
-                var path = browserUtils.getEventPath(event);
-                var target = path.find(function (e) {
-                    return browserUtils.elementMatches(e, selector);
-                });
-                if (target) {
-                    callback(event, target);
+                if (event.returnValue === false || event.defaultPrevented) {
+                    var path = browserUtils.getEventPath(event);
+                    var target = path.find(function (e) { return browserUtils.elementMatches(e, selector); });
+                    if (target) {
+                        callback(event, target);
+                    }
                 }
             });
         };

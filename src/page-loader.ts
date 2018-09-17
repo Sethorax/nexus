@@ -294,14 +294,16 @@ export class Nexus {
         callback: (event: Event, target: HTMLAnchorElement) => void
     ) {
         document.addEventListener("click", event => {
-            const path = getEventPath(event);
+            if (event.returnValue === false || event.defaultPrevented) {
+                const path = getEventPath(event);
 
-            const target = path.find((e: HTMLElement) =>
-                elementMatches(e, selector)
-            );
+                const target = path.find((e: HTMLElement) =>
+                    elementMatches(e, selector)
+                );
 
-            if (target) {
-                callback(event, target as HTMLAnchorElement);
+                if (target) {
+                    callback(event, target as HTMLAnchorElement);
+                }
             }
         });
     }

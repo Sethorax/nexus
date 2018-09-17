@@ -89,7 +89,7 @@ var Nexus = /** @class */ (function () {
             excludeUrls: new RegExp(".([a-z]+)$", "gm"),
             maxRetries: 3,
             retryTimeout: 500,
-            vanillaPageLoadOnError: true,
+            vanillaPageLoadOnError: true
         };
         this.listeners = {
             error: [],
@@ -97,7 +97,7 @@ var Nexus = /** @class */ (function () {
             afterLoad: [],
             beforeSwap: [],
             afterSwap: [],
-            targetUrlValidation: [],
+            targetUrlValidation: []
         };
         this.parser = parser;
         this.config = __assign({}, this.config, config);
@@ -122,7 +122,7 @@ var Nexus = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.dispatchEvent("error", {
                             url: this.currentUrl,
                             target: this.currentTarget,
-                            message: message,
+                            message: message
                         })];
                     case 1:
                         _a.sent();
@@ -150,19 +150,13 @@ var Nexus = /** @class */ (function () {
                             document.title = title;
                         }
                         if (contentRootAttributes) {
-                            contentRootAttributes.forEach(function (a) {
-                                return contentRoot.setAttribute(a.name, a.value);
-                            });
+                            contentRootAttributes.forEach(function (a) { return contentRoot.setAttribute(a.name, a.value); });
                         }
                         if (bodyAttributes) {
-                            bodyAttributes.forEach(function (a) {
-                                return document.body.setAttribute(a.name, a.value);
-                            });
+                            bodyAttributes.forEach(function (a) { return document.body.setAttribute(a.name, a.value); });
                         }
                         if (htmlAttributes) {
-                            htmlAttributes.forEach(function (a) {
-                                return document.documentElement.setAttribute(a.name, a.value);
-                            });
+                            htmlAttributes.forEach(function (a) { return document.documentElement.setAttribute(a.name, a.value); });
                         }
                         if (this.pushHistory) {
                             history.pushState({}, title, this.currentUrl);
@@ -171,7 +165,7 @@ var Nexus = /** @class */ (function () {
                                 url: this.currentUrl,
                                 target: this.currentTarget,
                                 parsedData: parsedData,
-                                rawData: rawData,
+                                rawData: rawData
                             })];
                     case 1:
                         _a.sent();
@@ -192,7 +186,7 @@ var Nexus = /** @class */ (function () {
                                 url: this.currentUrl,
                                 target: this.currentTarget,
                                 rawData: data,
-                                parsedData: parsedData,
+                                parsedData: parsedData
                             })];
                     case 1:
                         _a.sent();
@@ -208,7 +202,7 @@ var Nexus = /** @class */ (function () {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.dispatchEvent("afterLoad", {
                             url: this.currentUrl,
-                            target: this.currentTarget,
+                            target: this.currentTarget
                         })];
                     case 1:
                         _a.sent();
@@ -315,12 +309,12 @@ var Nexus = /** @class */ (function () {
     };
     Nexus.prototype.onElementClick = function (selector, callback) {
         document.addEventListener("click", function (event) {
-            var path = getEventPath(event);
-            var target = path.find(function (e) {
-                return elementMatches(e, selector);
-            });
-            if (target) {
-                callback(event, target);
+            if (event.returnValue === false || event.defaultPrevented) {
+                var path = getEventPath(event);
+                var target = path.find(function (e) { return elementMatches(e, selector); });
+                if (target) {
+                    callback(event, target);
+                }
             }
         });
     };
