@@ -280,7 +280,7 @@ var Nexus = /** @class */ (function () {
             }
             return res.text();
         })
-            .then(this.handleLoadResult)
+            .then(function (res) { return _this.handleLoadResult(res); })
             .catch(function () {
             if (_this.retryCount < _this.config.maxRetries) {
                 retry();
