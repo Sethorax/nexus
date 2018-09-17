@@ -319,7 +319,7 @@
         };
         Nexus.prototype.onElementClick = function (selector, callback) {
             document.addEventListener("click", function (event) {
-                if (event.returnValue === false || event.defaultPrevented) {
+                if (event.returnValue || !event.defaultPrevented) {
                     var path = browserUtils.getEventPath(event);
                     var target = path.find(function (e) {
                         return browserUtils.elementMatches(e, selector);

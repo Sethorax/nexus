@@ -315,7 +315,7 @@ var Nexus = /** @class */ (function () {
     };
     Nexus.prototype.onElementClick = function (selector, callback) {
         document.addEventListener("click", function (event) {
-            if (event.returnValue === false || event.defaultPrevented) {
+            if (event.returnValue || !event.defaultPrevented) {
                 var path = getEventPath(event);
                 var target = path.find(function (e) {
                     return elementMatches(e, selector);
