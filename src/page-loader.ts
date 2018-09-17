@@ -93,8 +93,8 @@ export class Nexus {
         }
     }
 
-    private dispatchError(message: string) {
-        this.dispatchEvent("error", {
+    private async dispatchError(message: string) {
+        await this.dispatchEvent("error", {
             url: this.currentUrl,
             target: this.currentTarget,
             message,
@@ -105,7 +105,7 @@ export class Nexus {
         }
     }
 
-    private swapContent(rawData: string, parsedData: NexusParsedData) {
+    private async swapContent(rawData: string, parsedData: NexusParsedData) {
         const {
             title,
             content,
@@ -149,7 +149,7 @@ export class Nexus {
             history.pushState({}, title, this.currentUrl);
         }
 
-        this.dispatchEvent("afterSwap", {
+        await this.dispatchEvent("afterSwap", {
             url: this.currentUrl,
             target: this.currentTarget,
             parsedData,
@@ -159,10 +159,10 @@ export class Nexus {
         this.loading = false;
     }
 
-    private handleRawPageData(data: string) {
+    private async handleRawPageData(data: string) {
         const parsedData = this.parser.parse(data);
 
-        this.dispatchEvent("beforeSwap", {
+        await this.dispatchEvent("beforeSwap", {
             url: this.currentUrl,
             target: this.currentTarget,
             rawData: data,
@@ -170,6 +170,19 @@ export class Nexus {
         });
 
         this.swapContent(data, parsedData);
+    }
+
+    private async handleLoadResult(res: string) {
+        await this.dispatchEvent("afterLoad", {
+            url: this.currentUrl,
+            target: this.currentTarget,
+        });
+
+        try {
+            this.handleRawPageData(res);
+        } catch (e) {
+            this.dispatchError(e);
+        }
     }
 
     private fetchPageContents(url: string) {
@@ -203,18 +216,7 @@ export class Nexus {
 
                 return res.text();
             })
-            .then(res => {
-                this.dispatchEvent("afterLoad", {
-                    url,
-                    target: this.currentTarget,
-                });
-
-                try {
-                    this.handleRawPageData(res);
-                } catch (e) {
-                    this.dispatchError(e);
-                }
-            })
+            .then(this.handleLoadResult)
             .catch(() => {
                 if (this.retryCount < this.config.maxRetries) {
                     retry();
@@ -226,7 +228,7 @@ export class Nexus {
             });
     }
 
-    private loadPage(url: string, target: HTMLAnchorElement) {
+    private async loadPage(url: string, target: HTMLAnchorElement) {
         if (this.loading) return;
 
         this.loading = true;
@@ -234,8 +236,7 @@ export class Nexus {
         this.currentTarget = target;
         this.currentUrl = url;
 
-        this.dispatchEvent("beforeLoad", { url, target });
-
+        await this.dispatchEvent("beforeLoad", { url, target });
         this.fetchPageContents(url);
     }
 
