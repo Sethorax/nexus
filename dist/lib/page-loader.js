@@ -59,7 +59,7 @@ var Nexus = /** @class */ (function () {
             excludeUrls: new RegExp(".([a-z]+)$", "gm"),
             maxRetries: 3,
             retryTimeout: 500,
-            vanillaPageLoadOnError: true
+            vanillaPageLoadOnError: true,
         };
         this.listeners = {
             error: [],
@@ -67,7 +67,7 @@ var Nexus = /** @class */ (function () {
             afterLoad: [],
             beforeSwap: [],
             afterSwap: [],
-            targetUrlValidation: []
+            targetUrlValidation: [],
         };
         this.parser = parser;
         this.config = __assign({}, this.config, config);
@@ -86,54 +86,112 @@ var Nexus = /** @class */ (function () {
         }
     };
     Nexus.prototype.dispatchError = function (message) {
-        this.dispatchEvent("error", {
-            url: this.currentUrl,
-            target: this.currentTarget,
-            message: message
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.dispatchEvent("error", {
+                            url: this.currentUrl,
+                            target: this.currentTarget,
+                            message: message,
+                        })];
+                    case 1:
+                        _a.sent();
+                        if (this.config.vanillaPageLoadOnError && this.currentTarget) {
+                            location.href = this.currentUrl;
+                        }
+                        return [2 /*return*/];
+                }
+            });
         });
-        if (this.config.vanillaPageLoadOnError && this.currentTarget) {
-            location.href = this.currentUrl;
-        }
     };
     Nexus.prototype.swapContent = function (rawData, parsedData) {
-        var title = parsedData.title, content = parsedData.content, contentRootAttributes = parsedData.contentRootAttributes, htmlAttributes = parsedData.htmlAttributes, bodyAttributes = parsedData.bodyAttributes;
-        var contentRoot = document.querySelector(this.config.contentRootSelector);
-        if (!contentRoot) {
-            throw Error("ContentRoot does not exist!");
-        }
-        contentRoot.innerHTML = content;
-        if (title) {
-            document.title = title;
-        }
-        if (contentRootAttributes) {
-            contentRootAttributes.forEach(function (a) { return contentRoot.setAttribute(a.name, a.value); });
-        }
-        if (bodyAttributes) {
-            bodyAttributes.forEach(function (a) { return document.body.setAttribute(a.name, a.value); });
-        }
-        if (htmlAttributes) {
-            htmlAttributes.forEach(function (a) { return document.documentElement.setAttribute(a.name, a.value); });
-        }
-        if (this.pushHistory) {
-            history.pushState({}, title, this.currentUrl);
-        }
-        this.dispatchEvent("afterSwap", {
-            url: this.currentUrl,
-            target: this.currentTarget,
-            parsedData: parsedData,
-            rawData: rawData
+        return __awaiter(this, void 0, void 0, function () {
+            var title, content, contentRootAttributes, htmlAttributes, bodyAttributes, contentRoot;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        title = parsedData.title, content = parsedData.content, contentRootAttributes = parsedData.contentRootAttributes, htmlAttributes = parsedData.htmlAttributes, bodyAttributes = parsedData.bodyAttributes;
+                        contentRoot = document.querySelector(this.config.contentRootSelector);
+                        if (!contentRoot) {
+                            throw Error("ContentRoot does not exist!");
+                        }
+                        contentRoot.innerHTML = content;
+                        if (title) {
+                            document.title = title;
+                        }
+                        if (contentRootAttributes) {
+                            contentRootAttributes.forEach(function (a) {
+                                return contentRoot.setAttribute(a.name, a.value);
+                            });
+                        }
+                        if (bodyAttributes) {
+                            bodyAttributes.forEach(function (a) {
+                                return document.body.setAttribute(a.name, a.value);
+                            });
+                        }
+                        if (htmlAttributes) {
+                            htmlAttributes.forEach(function (a) {
+                                return document.documentElement.setAttribute(a.name, a.value);
+                            });
+                        }
+                        if (this.pushHistory) {
+                            history.pushState({}, title, this.currentUrl);
+                        }
+                        return [4 /*yield*/, this.dispatchEvent("afterSwap", {
+                                url: this.currentUrl,
+                                target: this.currentTarget,
+                                parsedData: parsedData,
+                                rawData: rawData,
+                            })];
+                    case 1:
+                        _a.sent();
+                        this.loading = false;
+                        return [2 /*return*/];
+                }
+            });
         });
-        this.loading = false;
     };
     Nexus.prototype.handleRawPageData = function (data) {
-        var parsedData = this.parser.parse(data);
-        this.dispatchEvent("beforeSwap", {
-            url: this.currentUrl,
-            target: this.currentTarget,
-            rawData: data,
-            parsedData: parsedData
+        return __awaiter(this, void 0, void 0, function () {
+            var parsedData;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        parsedData = this.parser.parse(data);
+                        return [4 /*yield*/, this.dispatchEvent("beforeSwap", {
+                                url: this.currentUrl,
+                                target: this.currentTarget,
+                                rawData: data,
+                                parsedData: parsedData,
+                            })];
+                    case 1:
+                        _a.sent();
+                        this.swapContent(data, parsedData);
+                        return [2 /*return*/];
+                }
+            });
         });
-        this.swapContent(data, parsedData);
+    };
+    Nexus.prototype.handleLoadResult = function (res) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.dispatchEvent("afterLoad", {
+                            url: this.currentUrl,
+                            target: this.currentTarget,
+                        })];
+                    case 1:
+                        _a.sent();
+                        try {
+                            this.handleRawPageData(res);
+                        }
+                        catch (e) {
+                            this.dispatchError(e);
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     Nexus.prototype.fetchPageContents = function (url) {
         var _this = this;
@@ -152,15 +210,7 @@ var Nexus = /** @class */ (function () {
             }
             return res.text();
         })
-            .then(function (res) {
-            _this.dispatchEvent("afterLoad", { url: url, target: _this.currentTarget });
-            try {
-                _this.handleRawPageData(res);
-            }
-            catch (e) {
-                _this.dispatchError(e);
-            }
-        })
+            .then(this.handleLoadResult)
             .catch(function () {
             if (_this.retryCount < _this.config.maxRetries) {
                 retry();
@@ -171,13 +221,23 @@ var Nexus = /** @class */ (function () {
         });
     };
     Nexus.prototype.loadPage = function (url, target) {
-        if (this.loading)
-            return;
-        this.loading = true;
-        this.currentTarget = target;
-        this.currentUrl = url;
-        this.dispatchEvent("beforeLoad", { url: url, target: target });
-        this.fetchPageContents(url);
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.loading)
+                            return [2 /*return*/];
+                        this.loading = true;
+                        this.currentTarget = target;
+                        this.currentUrl = url;
+                        return [4 /*yield*/, this.dispatchEvent("beforeLoad", { url: url, target: target })];
+                    case 1:
+                        _a.sent();
+                        this.fetchPageContents(url);
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     Nexus.prototype.dispatchEvent = function (type, ev) {
         return Promise.all(this.listeners[type].map(function (l) { return Promise.resolve(l.callback(ev)); }));
@@ -222,7 +282,9 @@ var Nexus = /** @class */ (function () {
     Nexus.prototype.onElementClick = function (selector, callback) {
         document.addEventListener("click", function (event) {
             var path = browser_utils_1.getEventPath(event);
-            var target = path.find(function (e) { return browser_utils_1.elementMatches(e, selector); });
+            var target = path.find(function (e) {
+                return browser_utils_1.elementMatches(e, selector);
+            });
             if (target) {
                 callback(event, target);
             }

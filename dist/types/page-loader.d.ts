@@ -41,6 +41,7 @@ export declare class Nexus {
     private dispatchError;
     private swapContent;
     private handleRawPageData;
+    private handleLoadResult;
     private fetchPageContents;
     private loadPage;
     private dispatchEvent;
