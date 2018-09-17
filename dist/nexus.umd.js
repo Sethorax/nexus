@@ -1,8 +1,8 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-    typeof define === 'function' && define.amd ? define(['exports'], factory) :
-    (factory((global.nexus = {})));
-}(this, (function (exports) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@sethorax/browser-utils')) :
+    typeof define === 'function' && define.amd ? define(['exports', '@sethorax/browser-utils'], factory) :
+    (factory((global.nexus = {}),global.browserUtils));
+}(this, (function (exports,browserUtils) { 'use strict';
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation. All rights reserved.
@@ -80,48 +80,6 @@
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     }
-
-    /**
-     * Converts a NodeList or HTMLCollection to a plain Array.
-     */
-    /**
-     * Returns true if the element matches the given selector string.
-     */
-    var elementMatches = function (element, selector) {
-        return ((element.matches && element.matches(selector)) ||
-            (element.webkitMatchesSelector &&
-                element.webkitMatchesSelector(selector)) ||
-            (element.msMatchesSelector && element.msMatchesSelector(selector)) ||
-            false);
-    };
-
-    /**
-     * Checks if the event has a path or composedPath property.
-     */
-    var isEventWithPath = function (event) {
-        return (event.path !== undefined ||
-            event.composedPath !== undefined);
-    };
-    /**
-     * Gets the event path for the passed event.
-     */
-    var getEventPath = function (event) {
-        var polyfill = function () {
-            var element = event.target;
-            var pathArr = new Array(element);
-            if (!element || !element.parentElement) {
-                return [];
-            }
-            while (element.parentElement !== null) {
-                element = element.parentElement;
-                pathArr.unshift(element);
-            }
-            return pathArr;
-        };
-        return isEventWithPath(event)
-            ? event.path || event.composedPath()
-            : polyfill();
-    };
 
     var Nexus = /** @class */ (function () {
         function Nexus(parser, config) {
@@ -357,9 +315,9 @@
         };
         Nexus.prototype.onElementClick = function (selector, callback) {
             document.addEventListener("click", function (event) {
-                var path = getEventPath(event);
+                var path = browserUtils.getEventPath(event);
                 var target = path.find(function (e) {
-                    return elementMatches(e, selector);
+                    return browserUtils.elementMatches(e, selector);
                 });
                 if (target) {
                     callback(event, target);

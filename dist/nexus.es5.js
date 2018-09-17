@@ -1,3 +1,5 @@
+import { getEventPath, elementMatches } from '@sethorax/browser-utils';
+
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
@@ -74,48 +76,6 @@ function __generator(thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 }
-
-/**
- * Converts a NodeList or HTMLCollection to a plain Array.
- */
-/**
- * Returns true if the element matches the given selector string.
- */
-var elementMatches = function (element, selector) {
-    return ((element.matches && element.matches(selector)) ||
-        (element.webkitMatchesSelector &&
-            element.webkitMatchesSelector(selector)) ||
-        (element.msMatchesSelector && element.msMatchesSelector(selector)) ||
-        false);
-};
-
-/**
- * Checks if the event has a path or composedPath property.
- */
-var isEventWithPath = function (event) {
-    return (event.path !== undefined ||
-        event.composedPath !== undefined);
-};
-/**
- * Gets the event path for the passed event.
- */
-var getEventPath = function (event) {
-    var polyfill = function () {
-        var element = event.target;
-        var pathArr = new Array(element);
-        if (!element || !element.parentElement) {
-            return [];
-        }
-        while (element.parentElement !== null) {
-            element = element.parentElement;
-            pathArr.unshift(element);
-        }
-        return pathArr;
-    };
-    return isEventWithPath(event)
-        ? event.path || event.composedPath()
-        : polyfill();
-};
 
 var Nexus = /** @class */ (function () {
     function Nexus(parser, config) {

@@ -15,7 +15,7 @@ export default {
         { file: pkg.module, format: "es" }
     ],
     // External modules go here
-    external: [],
+    external: ["@sethorax/browser-utils"],
     watch: {
         include: "src/**"
     },
