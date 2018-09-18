@@ -77,6 +77,13 @@ var Nexus = /** @class */ (function () {
         return this;
     };
     Nexus.prototype.watch = function () {
+        window.onerror = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            return console.log.apply(console, args);
+        };
         try {
             this.interceptLinks();
             this.watchPopstate();
@@ -106,22 +113,23 @@ var Nexus = /** @class */ (function () {
     };
     Nexus.prototype.swapContent = function (rawData, parsedData) {
         return __awaiter(this, void 0, void 0, function () {
-            var title, content, contentRootAttributes, htmlAttributes, bodyAttributes, contentRoot;
+            var title, content, contentRootAttributes, htmlAttributes, bodyAttributes, contentRoot_1, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 2, , 3]);
                         title = parsedData.title, content = parsedData.content, contentRootAttributes = parsedData.contentRootAttributes, htmlAttributes = parsedData.htmlAttributes, bodyAttributes = parsedData.bodyAttributes;
-                        contentRoot = document.querySelector(this.config.contentRootSelector);
-                        if (!contentRoot) {
+                        contentRoot_1 = document.querySelector(this.config.contentRootSelector);
+                        if (!contentRoot_1) {
                             throw Error("ContentRoot does not exist!");
                         }
-                        contentRoot.innerHTML = content;
+                        contentRoot_1.innerHTML = content;
                         if (title) {
                             document.title = title;
                         }
                         if (contentRootAttributes) {
                             contentRootAttributes.forEach(function (a) {
-                                return contentRoot.setAttribute(a.name, a.value);
+                                return contentRoot_1.setAttribute(a.name, a.value);
                             });
                         }
                         if (bodyAttributes) {
@@ -146,7 +154,12 @@ var Nexus = /** @class */ (function () {
                     case 1:
                         _a.sent();
                         this.loading = false;
-                        return [2 /*return*/];
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_1 = _a.sent();
+                        this.dispatchError(e_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
@@ -182,12 +195,7 @@ var Nexus = /** @class */ (function () {
                         })];
                     case 1:
                         _a.sent();
-                        try {
-                            this.handleRawPageData(res);
-                        }
-                        catch (e) {
-                            this.dispatchError(e);
-                        }
+                        this.handleRawPageData(res);
                         return [2 /*return*/];
                 }
             });
@@ -195,30 +203,41 @@ var Nexus = /** @class */ (function () {
     };
     Nexus.prototype.fetchPageContents = function (url) {
         var _this = this;
-        var controller = new AbortController();
-        var signal = controller.signal;
-        var retry = function () {
-            _this.retryCount++;
-            console.warn("Could not fetch page! Retrying (" + _this.retryCount + "/" + _this.config.maxRetries + ") ...");
-            controller.abort();
-            setTimeout(function () { return _this.fetchPageContents(url); }, _this.config.retryTimeout);
-        };
-        fetch(url, __assign({}, this.config.fetchConfig, { signal: signal }))
-            .then(function (res) {
-            if (res.status >= 400) {
-                throw new Error();
+        try {
+            var controller_1;
+            var signal = void 0;
+            if (typeof AbortController !== "undefined") {
+                controller_1 = new AbortController();
+                signal = controller_1.signal;
             }
-            return res.text();
-        })
-            .then(function (res) { return _this.handleLoadResult(res); })
-            .catch(function () {
-            if (_this.retryCount < _this.config.maxRetries) {
-                retry();
-            }
-            else {
-                _this.dispatchError("Could not fetch page! Max retries exceeded!");
-            }
-        });
+            var retry_1 = function () {
+                _this.retryCount++;
+                console.warn("Could not fetch page! Retrying (" + _this.retryCount + "/" + _this.config.maxRetries + ") ...");
+                typeof AbortController !== "undefined" && controller_1.abort();
+                setTimeout(function () { return _this.fetchPageContents(url); }, _this.config.retryTimeout);
+            };
+            var config = typeof AbortController !== "undefined"
+                ? __assign({}, this.config.fetchConfig, { signal: signal }) : this.config.fetchConfig;
+            fetch(url, config)
+                .then(function (res) {
+                if (res.status >= 400) {
+                    throw new Error();
+                }
+                return res.text();
+            })
+                .then(function (res) { return _this.handleLoadResult(res); })
+                .catch(function () {
+                if (_this.retryCount < _this.config.maxRetries) {
+                    retry_1();
+                }
+                else {
+                    _this.dispatchError("Could not fetch page! Max retries exceeded!");
+                }
+            });
+        }
+        catch (e) {
+            this.dispatchError(e);
+        }
     };
     Nexus.prototype.loadPage = function (url, target) {
         return __awaiter(this, void 0, void 0, function () {
