@@ -85,6 +85,8 @@ export class Nexus {
     }
 
     public watch() {
+        window.onerror = (...args) => console.log(...args);
+
         try {
             this.interceptLinks();
             this.watchPopstate();
@@ -106,57 +108,61 @@ export class Nexus {
     }
 
     private async swapContent(rawData: string, parsedData: NexusParsedData) {
-        const {
-            title,
-            content,
-            contentRootAttributes,
-            htmlAttributes,
-            bodyAttributes,
-        } = parsedData;
-        const contentRoot = document.querySelector(
-            this.config.contentRootSelector
-        );
-
-        if (!contentRoot) {
-            throw Error("ContentRoot does not exist!");
-        }
-
-        contentRoot.innerHTML = content;
-
-        if (title) {
-            document.title = title;
-        }
-
-        if (contentRootAttributes) {
-            contentRootAttributes.forEach(a =>
-                contentRoot.setAttribute(a.name, a.value)
+        try {
+            const {
+                title,
+                content,
+                contentRootAttributes,
+                htmlAttributes,
+                bodyAttributes,
+            } = parsedData;
+            const contentRoot = document.querySelector(
+                this.config.contentRootSelector
             );
+
+            if (!contentRoot) {
+                throw Error("ContentRoot does not exist!");
+            }
+
+            contentRoot.innerHTML = content;
+
+            if (title) {
+                document.title = title;
+            }
+
+            if (contentRootAttributes) {
+                contentRootAttributes.forEach(a =>
+                    contentRoot.setAttribute(a.name, a.value)
+                );
+            }
+
+            if (bodyAttributes) {
+                bodyAttributes.forEach(a =>
+                    document.body.setAttribute(a.name, a.value)
+                );
+            }
+
+            if (htmlAttributes) {
+                htmlAttributes.forEach(a =>
+                    document.documentElement.setAttribute(a.name, a.value)
+                );
+            }
+
+            if (this.pushHistory) {
+                history.pushState({}, title, this.currentUrl);
+            }
+
+            await this.dispatchEvent("afterSwap", {
+                url: this.currentUrl,
+                target: this.currentTarget,
+                parsedData,
+                rawData,
+            });
+
+            this.loading = false;
+        } catch (e) {
+            this.dispatchError(e);
         }
-
-        if (bodyAttributes) {
-            bodyAttributes.forEach(a =>
-                document.body.setAttribute(a.name, a.value)
-            );
-        }
-
-        if (htmlAttributes) {
-            htmlAttributes.forEach(a =>
-                document.documentElement.setAttribute(a.name, a.value)
-            );
-        }
-
-        if (this.pushHistory) {
-            history.pushState({}, title, this.currentUrl);
-        }
-
-        await this.dispatchEvent("afterSwap", {
-            url: this.currentUrl,
-            target: this.currentTarget,
-            parsedData,
-            rawData,
-        });
-
-        this.loading = false;
     }
 
     private async handleRawPageData(data: string) {
@@ -178,54 +184,64 @@ export class Nexus {
             target: this.currentTarget,
         });
 
-        try {
-            this.handleRawPageData(res);
-        } catch (e) {
-            this.dispatchError(e);
-        }
+        this.handleRawPageData(res);
     }
 
     private fetchPageContents(url: string) {
-        const controller = new AbortController();
-        const { signal } = controller;
+        try {
+            let controller: AbortController;
+            let signal: AbortSignal;
 
-        const retry = () => {
-            this.retryCount++;
+            if (typeof AbortController !== "undefined") {
+                controller = new AbortController();
+                signal = controller.signal;
+            }
 
-            console.warn(
-                `Could not fetch page! Retrying (${this.retryCount}/${
-                    this.config.maxRetries
-                }) ...`
-            );
+            const retry = () => {
+                this.retryCount++;
 
-            controller.abort();
-            setTimeout(
-                () => this.fetchPageContents(url),
-                this.config.retryTimeout
-            );
-        };
+                console.warn(
+                    `Could not fetch page! Retrying (${this.retryCount}/${
+                        this.config.maxRetries
+                    }) ...`
+                );
 
-        fetch(url, {
-            ...this.config.fetchConfig,
-            signal,
-        })
-            .then(res => {
-                if (res.status >= 400) {
-                    throw new Error();
-                }
+                typeof AbortController !== "undefined" && controller.abort();
+                setTimeout(
+                    () => this.fetchPageContents(url),
+                    this.config.retryTimeout
+                );
+            };
 
-                return res.text();
-            })
-            .then(res => this.handleLoadResult(res))
-            .catch(() => {
-                if (this.retryCount < this.config.maxRetries) {
-                    retry();
-                } else {
-                    this.dispatchError(
-                        "Could not fetch page! Max retries exceeded!"
-                    );
-                }
-            });
+            const config =
+                typeof AbortController !== "undefined"
+                    ? {
+                          ...this.config.fetchConfig,
+                          signal,
+                      }
+                    : this.config.fetchConfig;
+
+            fetch(url, config)
+                .then(res => {
+                    if (res.status >= 400) {
+                        throw new Error();
+                    }
+
+                    return res.text();
+                })
+                .then(res => this.handleLoadResult(res))
+                .catch(() => {
+                    if (this.retryCount < this.config.maxRetries) {
+                        retry();
+                    } else {
+                        this.dispatchError(
+                            "Could not fetch page! Max retries exceeded!"
+                        );
+                    }
+                });
+        } catch (e) {
+            this.dispatchError(e);
+        }
     }
 
     private async loadPage(url: string, target: HTMLAnchorElement) {
