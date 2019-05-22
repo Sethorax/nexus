@@ -296,10 +296,13 @@ var Nexus = /** @class */ (function () {
     Nexus.prototype.watchPopstate = function () {
         var _this = this;
         window.onpopstate = function () {
-            _this.currentUrl = location.href;
+            var url = location.href;
+            _this.currentUrl = url;
             _this.currentTarget = null;
             _this.pushHistory = false;
-            _this.loadPage(location.href, null);
+            if (_this.validateUrl(url, null)) {
+                _this.loadPage(location.href, null);
+            }
         };
     };
     Nexus.prototype.onElementClick = function (selector, callback) {

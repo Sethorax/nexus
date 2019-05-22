@@ -1,7 +1,7 @@
 {
   "name": "@sethorax/nexus",
-  "version": "1.0.6",
-  "description": "HIghly configurable AJAX page loader with support for pluggable parsers.",
+  "version": "1.0.7",
+  "description": "Highly configurable AJAX page loader with support for pluggable parsers.",
   "main": "dist/nexus.umd.js",
   "module": "dist/nexus.es5.js",
   "types": "dist/types/nexus.d.ts",

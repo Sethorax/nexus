@@ -297,11 +297,15 @@ export class Nexus {
 
     private watchPopstate() {
         window.onpopstate = () => {
-            this.currentUrl = location.href;
+            const url = location.href;
+
+            this.currentUrl = url;
             this.currentTarget = null;
             this.pushHistory = false;
 
-            this.loadPage(location.href, null);
+            if (this.validateUrl(url, null)) {
+                this.loadPage(location.href, null);
+            }
         };
     }
 
