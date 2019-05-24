@@ -266,8 +266,10 @@ export class Nexus {
     }
 
     private validateUrl(url: string, target: HTMLAnchorElement) {
+        const anchorTarget = (target && target.target) || "";
+
         return (
-            target.target !== "blank" &&
+            anchorTarget !== "_blank" &&
             this.config.excludeUrls.exec(url) === null &&
             url.indexOf(location.origin) > -1 &&
             url

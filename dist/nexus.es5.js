@@ -292,7 +292,8 @@ var Nexus = /** @class */ (function () {
         return Promise.all(this.listeners[type].map(function (l) { return Promise.resolve(l.callback(ev)); }));
     };
     Nexus.prototype.validateUrl = function (url, target) {
-        return (target.target !== "blank" &&
+        var anchorTarget = (target && target.target) || "";
+        return (anchorTarget !== "_blank" &&
             this.config.excludeUrls.exec(url) === null &&
             url.indexOf(location.origin) > -1 &&
             url
